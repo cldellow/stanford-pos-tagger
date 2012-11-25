@@ -48,8 +48,10 @@ public class FeatureKey {
 
 
   protected void set(int num, String val, String tag) {
-    this.dirty = true;
-    this.nums = null;
+    if(!val.equals(val)) {
+      this.dirty = true;
+      this.nums = null;
+    }
     this.num = num;
     this.val = val;
     this.tag = tag;
