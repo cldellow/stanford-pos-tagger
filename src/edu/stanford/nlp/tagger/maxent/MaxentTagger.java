@@ -537,10 +537,8 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
 
   /* Package access.  Not part of public API. */
   int getNum(FeatureKey s) {
-    int[] arr = null;
-    if(!s.dirty) {
-      arr = s.nums;
-    } else {
+    int[] arr = s.nums;
+    if(s.dirty) {
       arr = fAssociations2.get(s.val);
       s.nums = arr;
       s.dirty = false;
@@ -549,14 +547,8 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
     if(arr == null)
       return -2; // totally unknown word
 
-    int newRv = -1;
-    if(arr != null) {
-      int tagIndex = tags.getIndex(s.tag);
-
-      newRv = arr[tagIndex * numExtractors + s.num];
-    }
-    return newRv;
-
+    int tagIndex = tags.getIndex(s.tag);
+    return arr[tagIndex * numExtractors + s.num];
   }
 
 
@@ -722,19 +714,33 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
     if (VERBOSE) {
       pfVP = new PrintFile("pairs.txt");
     }
+
+    int arr[] = null;
+    String lastVal = null;
     for (int i = 0; i < sizeAssoc; i++) {
       int numF = rf.readInt();
       FeatureKey fK = new FeatureKey();
       fK.read(rf);
       numFA[fK.num]++;
       fAssociations.put(fK, numF);
-      int arr[] = fAssociations2.get(fK.val);
-      if(arr == null) {
-        // First time we've encountered this word, allocate an array for scores
-        arr = new int[numFA.length * ySize];
-        for(int j = 0; j < arr.length; j++)
-          arr[j] = -1;
-        fAssociations2.put(fK.val, arr);
+
+      // It turns out we'll often hit this case and have to do the hash lookup,
+      // if we changed saveModel to serialize the feature keys in order of the vals,
+      // this loop would be a lot faster.
+      //
+      // I don't know how to run the model train/export phase, so I'll just leave this as a
+      // suggestion for future work.
+      if(!fK.val.equals(lastVal)) {
+        arr = fAssociations2.get(fK.val);
+        if(arr == null) {
+          // First time we've encountered this word, allocate an array for scores
+          arr = new int[numFA.length * ySize];
+          for(int j = 0; j < arr.length; j++)
+            arr[j] = -1;
+          fAssociations2.put(fK.val, arr);
+        }
+
+        lastVal = fK.val;
       }
 
       int tagIndex = tags.getIndex(fK.tag);

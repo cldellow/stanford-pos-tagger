@@ -447,6 +447,7 @@ public class TestSentence implements SequenceModel {
         String tag = maxentTagger.tags.getTag(i);
         s.set(kf, val, tag);
         int fNum = maxentTagger.getNum(s);
+        if (fNum == -2) break;
         if (fNum > -1) {
           scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
         }
@@ -461,6 +462,7 @@ public class TestSentence implements SequenceModel {
           String tag = maxentTagger.tags.getTag(i);
           s.set(szCommon+kf, val, tag);
           int fNum = maxentTagger.getNum(s);
+          if (fNum == -2) break;
           if (fNum > -1) {
             scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
           } // end for
@@ -489,6 +491,7 @@ public class TestSentence implements SequenceModel {
           s.setTag(tag);
         }
         int fNum = maxentTagger.getNum(s);
+        if (fNum == -2) break;
         if (fNum > -1) {
           scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
         }
@@ -507,6 +510,7 @@ public class TestSentence implements SequenceModel {
             s.setTag(tag);
           }
           int fNum = maxentTagger.getNum(s);
+          if (fNum == -2) break;
           if (fNum > -1) {
             scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
           }

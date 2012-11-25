@@ -24,8 +24,8 @@ object MyScalaApp {
           (1 to 100).foreach { j =>
             tagger.tagString(txt)
           }
-          //println("    getTag = " + tagger.took/1000);
-          //tagger.took = 0L;
+//          println("    getTag = " + tagger.took/1000);
+//          tagger.took = 0;
         }
       }
     } else {
