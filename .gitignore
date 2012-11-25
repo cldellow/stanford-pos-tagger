@@ -1,4 +1,5 @@
 *.class
+*.tagger
 
 # Package Files #
 *.jar

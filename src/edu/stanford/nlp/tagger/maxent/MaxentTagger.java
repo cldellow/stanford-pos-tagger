@@ -313,6 +313,8 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
   byte[][] fnumArr; // TODO: move this into TaggerExperiments. It could be a private method of that class with an accessor
   LambdaSolveTagger prob;
   HashMap<FeatureKey,Integer> fAssociations = new HashMap<FeatureKey,Integer>();
+  int numExtractors = -1;
+  HashMap<String, int[]> fAssociations2 = new HashMap<String, int[]>();
   //PairsHolder pairs = new PairsHolder();
   Extractors extractors;
   Extractors extractorsRare;
@@ -535,12 +537,25 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
 
   /* Package access.  Not part of public API. */
   int getNum(FeatureKey s) {
-    Integer num = fAssociations.get(s); // hprof: 15% effective running time
-    if (num == null) {
-      return -1;
+    int[] arr = null;
+    if(!s.dirty) {
+      arr = s.nums;
     } else {
-      return num;
+      arr = fAssociations2.get(s.val);
+      s.nums = arr;
     }
+
+    if(arr == null)
+      return -2; // totally unknown word
+
+    int newRv = -1;
+    if(arr != null) {
+      int tagIndex = tags.getIndex(s.tag);
+
+      newRv = arr[tagIndex * numExtractors + s.num];
+    }
+    return newRv;
+
   }
 
 
@@ -688,7 +703,8 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
     readExtractors(rf);
     dict.setAmbClasses(ambClasses, veryCommonWordThresh, tags);
 
-    int[] numFA = new int[extractors.getSize() + extractorsRare.getSize()];
+    numExtractors = extractors.getSize() + extractorsRare.getSize();
+    int[] numFA = new int[numExtractors];
     int sizeAssoc = rf.readInt();
     // init the Hash at the right size for efficiency (avoid resizing ops)
     // mg2008: sizeAssoc defines the number of keys, whereas specifying
@@ -696,6 +712,10 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
     // Unless load factor is >= 1, fAssociations is guaranteed to resize at least once.
     //fAssociations = new HashMap<FeatureKey,Integer>(sizeAssoc);
     fAssociations = new HashMap<FeatureKey,Integer>(sizeAssoc*2);
+
+    //TODO: consider sizing this better, # of words
+    fAssociations2 = new HashMap<String,int[]>();
+
     if (VERBOSE) System.err.printf("Reading %d feature keys...\n",sizeAssoc);
     PrintFile pfVP = null;
     if (VERBOSE) {
@@ -707,7 +727,19 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
       fK.read(rf);
       numFA[fK.num]++;
       fAssociations.put(fK, numF);
+      int arr[] = fAssociations2.get(fK.val);
+      if(arr == null) {
+        // First time we've encountered this word, allocate an array for scores
+        arr = new int[numFA.length * ySize];
+        for(int j = 0; j < arr.length; j++)
+          arr[j] = -1;
+        fAssociations2.put(fK.val, arr);
+      }
+
+      int tagIndex = tags.getIndex(fK.tag);
+      arr[tagIndex * numFA.length + fK.num] = numF;
     }
+
     if (VERBOSE) {
       pfVP.close();
     }

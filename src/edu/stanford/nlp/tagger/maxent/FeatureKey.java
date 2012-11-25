@@ -30,6 +30,12 @@ public class FeatureKey {
   String val;
   String tag;
 
+  // If dirty, the scores in nums cannot be reused.
+  public boolean dirty = true;
+  // The scores for this.val, corresponding to entries in  the extractors X tags matrix,
+  // flattened into a single array.
+  public int[] nums = null;
+
   public FeatureKey() {
   }
 
@@ -42,6 +48,8 @@ public class FeatureKey {
 
 
   protected void set(int num, String val, String tag) {
+    this.dirty = true;
+    this.nums = null;
     this.num = num;
     this.val = val;
     this.tag = tag;
@@ -54,7 +62,8 @@ public class FeatureKey {
   // help.  Perhaps Strings already cache their own hashCode.
   protected void setTag(String tag) {
     if (hashCode != 0) {
-      this.hashCode = this.hashCode ^ this.tag.hashCode() ^ tag.hashCode();
+      this.hashCode = 0;
+      //this.hashCode = this.hashCode ^ this.tag.hashCode() ^ tag.hashCode();
     }
     this.tag = tag;
   }
