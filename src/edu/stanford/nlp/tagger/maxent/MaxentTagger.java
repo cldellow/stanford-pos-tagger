@@ -543,6 +543,7 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
     } else {
       arr = fAssociations2.get(s.val);
       s.nums = arr;
+      s.dirty = false;
     }
 
     if(arr == null)
