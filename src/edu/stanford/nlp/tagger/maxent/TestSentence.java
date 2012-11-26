@@ -444,10 +444,9 @@ public class TestSentence implements SequenceModel {
       int kf = e.getKey();
       Extractor ex = e.getValue();
       String val = ex.extract(h);
+      s.set(kf, val, "");
       for (int i = 0; i < maxentTagger.ySize; i++) {
-        String tag = maxentTagger.tags.getTag(i);
-        s.set(kf, val, tag);
-        int fNum = maxentTagger.getNum(s);
+        int fNum = maxentTagger.getNum(s, i);
         if (fNum == -2) break;
         if (fNum > -1) {
           scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
@@ -459,10 +458,9 @@ public class TestSentence implements SequenceModel {
         int kf = e.getKey();
         Extractor ex = e.getValue();
         String val = ex.extract(h);
+        s.set(szCommon+kf, val, "");
         for (int i = 0; i < maxentTagger.ySize; i++) {
-          String tag = maxentTagger.tags.getTag(i);
-          s.set(szCommon+kf, val, tag);
-          int fNum = maxentTagger.getNum(s);
+          int fNum = maxentTagger.getNum(s, i);
           if (fNum == -2) break;
           if (fNum > -1) {
             scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
@@ -476,6 +474,10 @@ public class TestSentence implements SequenceModel {
   // Returns an unnormalized score (in log space) for each tag
   private double[] getApproximateHistories(String[] tags, History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
 
+    int tagIndexes[] = new int[tags.length];
+    for(int i = 0; i < tags.length; i++)
+      tagIndexes[i] = maxentTagger.tags.getIndex(tags[i]);
+
     double[] scores = new double[tags.length];
     FeatureKey s = new FeatureKey();
     int szCommon = maxentTagger.extractors.getSize();
@@ -484,14 +486,9 @@ public class TestSentence implements SequenceModel {
       int kf = e.getKey();
       Extractor ex = e.getValue();
       String val = ex.extract(h);
+      s.set(kf, val, "");
       for (int j = 0; j < tags.length; j++) {
-        String tag = tags[j];
-        if (j == 0) {
-          s.set(kf, val, tag);
-        } else {
-          s.setTag(tag);
-        }
-        int fNum = maxentTagger.getNum(s);
+        int fNum = maxentTagger.getNum(s, tagIndexes[j]);
         if (fNum == -2) break;
         if (fNum > -1) {
           scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
@@ -503,14 +500,9 @@ public class TestSentence implements SequenceModel {
         int kf = e.getKey();
         Extractor ex = e.getValue();
         String val = ex.extract(h);
+        s.set(szCommon+kf, val, "");
         for (int j = 0; j < tags.length; j++) {
-          String tag = tags[j];
-          if (j == 0) {
-            s.set(szCommon+kf, val, tag);
-          } else {
-            s.setTag(tag);
-          }
-          int fNum = maxentTagger.getNum(s);
+          int fNum = maxentTagger.getNum(s, tagIndexes[j]);
           if (fNum == -2) break;
           if (fNum > -1) {
             scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
