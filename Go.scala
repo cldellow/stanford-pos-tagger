@@ -19,7 +19,7 @@ object MyScalaApp {
     System.out.println("waiting");
     val txt = scala.io.Source.fromFile("./betel.txt").getLines().mkString(" ")
     val tagger = new MaxentTagger("english.tagger")
-    if(false) {
+    if(true) {
       (1 to 1000).foreach { i =>
         timeIt("tag") {
           (1 to 10).foreach { j =>

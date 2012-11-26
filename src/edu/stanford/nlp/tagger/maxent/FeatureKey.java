@@ -48,7 +48,7 @@ public class FeatureKey {
 
 
   protected void set(int num, String val, String tag) {
-    if(!val.equals(val)) {
+    if(!val.equals(this.val)) {
       this.dirty = true;
       this.nums = null;
     }
