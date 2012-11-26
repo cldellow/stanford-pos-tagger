@@ -27,6 +27,8 @@ class TagCount {
   private int ambClassId = -1; /* This is a numeric ID shared by all words that have the same set of possible tags. */
 
   private String[] getTagsCache; // = null;
+  private int sumCache = 0;
+  private boolean sumDirty = true;
   private boolean dirty = true;
 
   TagCount() { }
@@ -80,6 +82,7 @@ class TagCount {
 	map.put(tag, count);
       }
       dirty = true;
+      sumDirty = true;
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -117,10 +120,15 @@ class TagCount {
    * @return the number of total occurrences of the word .
    */
   protected int sum() {
+    if(!sumDirty)
+      return sumCache;
+
     int s = 0;
     for (Integer i : map.values()) {
       s += i;
     }
+    sumDirty = false;
+    sumCache = s;
     return s;
   }
 
@@ -129,6 +137,7 @@ class TagCount {
   protected void add(String tag) {
     int val;
 
+    sumDirty = true;
     if (map.get(tag) != null) {
       val = map.get(tag);
     } else {

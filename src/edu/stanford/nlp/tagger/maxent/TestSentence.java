@@ -39,6 +39,7 @@ public class TestSentence implements SequenceModel {
 
   protected final boolean VERBOSE;
   protected static final String naTag = "NA";
+  protected static final String[] naTagArr = new String[] { naTag };
   protected static final boolean DBG = false;
   protected static final int kBestSize = 1;
 
@@ -713,12 +714,11 @@ public class TestSentence implements SequenceModel {
   }
 
   protected String[] stringTagsAt(int pos) {
-    String[] arr1;
     if ((pos < leftWindow()) || (pos >= size + leftWindow())) {
-      arr1 = new String[1];
-      arr1[0] = naTag;
-      return arr1;
+      return naTagArr;
     }
+
+    String[] arr1;
 
     if (originalTags != null && originalTags.get(pos - leftWindow()) != null) {
       arr1 = new String[1];

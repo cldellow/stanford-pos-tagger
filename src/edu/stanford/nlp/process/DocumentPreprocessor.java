@@ -196,6 +196,7 @@ public class DocumentPreprocessor implements Iterable<List<HasWord>> {
     }
   }
 
+  private static final java.util.regex.Pattern wsPattern = java.util.regex.Pattern.compile("\\s+");
 
   private class PlainTextIterator implements Iterator<List<HasWord>> {
 
@@ -205,6 +206,7 @@ public class DocumentPreprocessor implements Iterable<List<HasWord>> {
     private Function<String, String[]> splitTag;
     private List<HasWord> nextSent = null;
     private final List<HasWord> nextSentCarryover = new ArrayList<HasWord>();
+
 
     public PlainTextIterator() {
       // Establish how to find sentence boundaries
@@ -218,7 +220,7 @@ public class DocumentPreprocessor implements Iterable<List<HasWord>> {
       } else {
         sentDelims.add(sentenceDelimiter);
         delimFollowers = new HashSet<String>();
-        eolIsSignificant = sentenceDelimiter.matches("\\s+");
+        eolIsSignificant = wsPattern.matcher(sentenceDelimiter).matches();
         if(eolIsSignificant) { // For Stanford English Tokenizer
           sentDelims.add(PTBLexer.NEWLINE_TOKEN);
         }
@@ -284,7 +286,7 @@ public class DocumentPreprocessor implements Iterable<List<HasWord>> {
           break;
         }
 
-        if ( ! (token.word().matches("\\s+") ||
+        if ( ! (wsPattern.matcher(token.word()).matches() ||
                 token.word().equals(PTBLexer.NEWLINE_TOKEN))) {
           nextSent.add(token);
         }

@@ -99,28 +99,31 @@ public class Americanize implements Function<HasWord,HasWord> {
     // System.err.println("str is |" + str + "|");
     // System.err.println("timexMapping.contains is " +
     //            timexMapping.containsKey(str));
-    if (capitalizeTimex && timexMapping.containsKey(str)) {
-      return timexMapping.get(str);
-    } else if (mapping.containsKey(str)) {
-      return mapping.get(str);
-    } else {
-      for (int i = 0; i < pats.length; i++) {
-        Pattern ex = excepts[i];
-        if (ex != null) {
-          Matcher me = ex.matcher(str);
-          if (me.find()) {
-            continue;
-          }
-        }
-        Matcher m = pats[i].matcher(str);
-        if (m.find()) {
-          // System.err.println("Replacing " + word + " with " +
-          //             pats[i].matcher(word).replaceAll(reps[i]));
-          return m.replaceAll(reps[i]);
+    String rv = null;
+    if (capitalizeTimex) {
+      rv = timexMapping.get(str);
+      if(rv != null)
+        return rv;
+    }
+    rv = mapping.get(str);
+    if(rv != null)
+      return rv;
+    for (int i = 0; i < pats.length; i++) {
+      Pattern ex = excepts[i];
+      if (ex != null) {
+        Matcher me = ex.matcher(str);
+        if (me.find()) {
+          continue;
         }
       }
-      return str;
+      Matcher m = pats[i].matcher(str);
+      if (m.find()) {
+        // System.err.println("Replacing " + word + " with " +
+        //             pats[i].matcher(word).replaceAll(reps[i]));
+        return m.replaceAll(reps[i]);
+      }
     }
+    return str;
   }
 
 

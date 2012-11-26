@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
@@ -10642,8 +10643,9 @@ class PTBLexer {
     return getNext(out, in);
   }
 
+  private static final Pattern softHyphenPattern = Pattern.compile("\u00AD");
   private static String removeSoftHyphens(String in) {
-    String result = in.replaceAll("\u00AD", "");
+    String result = softHyphenPattern.matcher(in).replaceAll("");
     if (result.length() == 0) {
       return "-";
     } else {
@@ -10659,19 +10661,28 @@ class PTBLexer {
     return s1;
   }
 
+  private static Pattern singleQuote = Pattern.compile("&apos;|'");
+  private static Pattern doubleLeftQuote1 = Pattern.compile("\"|&quot;");
+  private static Pattern doubleRightQuote1 = Pattern.compile("\"|&quot;");
+
+  private static Pattern leftQuote1 = Pattern.compile("[\u0091\u2018\u201B\u2039]");
+  private static Pattern rightQuote1 = Pattern.compile("[\u0092\u2019\u203A]");
+  private static Pattern leftQuote2 = Pattern.compile("[\u0093\u201C\u00AB]");
+  private static Pattern rightQuote2 = Pattern.compile("[\u0094\u201D\u00BB]");
+
   private static String latexQuotes(String in, boolean probablyLeft) {
     String s1 = in;
     if (probablyLeft) {
-      s1 = s1.replaceAll("&apos;|'", "`");
-      s1 = s1.replaceAll("\"|&quot;", "``");
+      s1 = singleQuote.matcher(s1).replaceAll("`");
+      s1 = doubleLeftQuote1.matcher(s1).replaceAll("``");
     } else {
-      s1 = s1.replaceAll("&apos;|'", "'");
-      s1 = s1.replaceAll("\"|&quot;", "''");
+      s1 = singleQuote.matcher(s1).replaceAll("'");
+      s1 = doubleRightQuote1.matcher(s1).replaceAll("''");
     }
-    s1 = s1.replaceAll("[\u0091\u2018\u201B\u2039]", "`");
-    s1 = s1.replaceAll("[\u0092\u2019\u203A]", "'");
-    s1 = s1.replaceAll("[\u0093\u201C\u00AB]", "``");
-    s1 = s1.replaceAll("[\u0094\u201D\u00BB]", "''");
+    s1 = leftQuote1.matcher(s1).replaceAll("`");
+    s1 = rightQuote1.matcher(s1).replaceAll("'");
+    s1 = leftQuote2.matcher(s1).replaceAll("``");
+    s1 = rightQuote2.matcher(s1).replaceAll("''");
     return s1;
   }
 

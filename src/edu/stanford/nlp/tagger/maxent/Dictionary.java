@@ -144,22 +144,23 @@ public class Dictionary {
 
 
   String getFirstTag(String word) {
-    if (dict.containsKey(word)) {
-      return dict.get(word).getFirstTag();
-    }
+    TagCount tagCount = dict.get(word);
+    if(tagCount != null)
+      return tagCount.getFirstTag();
     return null;
   }
 
 
   protected int sum(String word) {
-    if (dict.containsKey(word)) {
-      return dict.get(word).sum();
-    }
+    TagCount count = dict.get(word);
+    if(count != null)
+      return count.sum();
     return 0;
   }
 
   boolean isUnknown(String word) {
-    return ! dict.containsKey(word);
+    //return ! dict.containsKey(word);
+    return dict.get(word) == null;
   }
 
 
