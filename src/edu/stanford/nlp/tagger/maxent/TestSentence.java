@@ -437,6 +437,7 @@ public class TestSentence implements SequenceModel {
 
   private double[] getExactHistories(History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
     double[] scores = new double[maxentTagger.ySize];
+    double[] lambda = maxentTagger.getLambdaSolve().lambda;
     FeatureKey s = new FeatureKey();
     int szCommon = maxentTagger.extractors.getSize();
 
@@ -449,7 +450,7 @@ public class TestSentence implements SequenceModel {
         int fNum = maxentTagger.getNum(s, i);
         if (fNum == -2) break;
         if (fNum > -1) {
-          scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
+          scores[i] += lambda[fNum];
         }
       }
     }
@@ -463,7 +464,7 @@ public class TestSentence implements SequenceModel {
           int fNum = maxentTagger.getNum(s, i);
           if (fNum == -2) break;
           if (fNum > -1) {
-            scores[i] += maxentTagger.getLambdaSolve().lambda[fNum];
+            scores[i] += lambda[fNum];
           } // end for
         }
       }
@@ -473,6 +474,7 @@ public class TestSentence implements SequenceModel {
 
   // Returns an unnormalized score (in log space) for each tag
   private double[] getApproximateHistories(String[] tags, History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
+    double lambda[] = maxentTagger.getLambdaSolve().lambda;
 
     int tagIndexes[] = new int[tags.length];
     for(int i = 0; i < tags.length; i++)
@@ -491,7 +493,7 @@ public class TestSentence implements SequenceModel {
         int fNum = maxentTagger.getNum(s, tagIndexes[j]);
         if (fNum == -2) break;
         if (fNum > -1) {
-          scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
+          scores[j] += lambda[fNum];
         }
       }
     }
@@ -505,7 +507,7 @@ public class TestSentence implements SequenceModel {
           int fNum = maxentTagger.getNum(s, tagIndexes[j]);
           if (fNum == -2) break;
           if (fNum > -1) {
-            scores[j] += maxentTagger.getLambdaSolve().lambda[fNum];
+            scores[j] += lambda[fNum];
           }
         }
       }
