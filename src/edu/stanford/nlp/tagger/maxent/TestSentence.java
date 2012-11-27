@@ -438,19 +438,23 @@ public class TestSentence implements SequenceModel {
   private double[] getExactHistories(History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
     double[] scores = new double[maxentTagger.ySize];
     double[] lambda = maxentTagger.getLambdaSolve().lambda;
-    FeatureKey s = new FeatureKey();
+
     int szCommon = maxentTagger.extractors.getSize();
+    int numExtractors = szCommon;
+    if(maxentTagger.extractorsRare != null)
+      numExtractors += maxentTagger.extractorsRare.getSize();
 
     for(Map.Entry<Integer,Extractor> e : extractors.entrySet()) {
       int kf = e.getKey();
       Extractor ex = e.getValue();
       String val = ex.extract(h);
-      s.set(kf, val, "");
-      for (int i = 0; i < maxentTagger.ySize; i++) {
-        int fNum = maxentTagger.getNum(s, i);
-        if (fNum == -2) break;
-        if (fNum > -1) {
-          scores[i] += lambda[fNum];
+      int nums[] = maxentTagger.getScores(val);
+      if(nums != null) { // known word
+        for (int i = 0; i < maxentTagger.ySize; i++) {
+          int fNum = nums[i * numExtractors + kf];
+          if (fNum > -1) {
+            scores[i] += lambda[fNum];
+          }
         }
       }
     }
@@ -459,13 +463,14 @@ public class TestSentence implements SequenceModel {
         int kf = e.getKey();
         Extractor ex = e.getValue();
         String val = ex.extract(h);
-        s.set(szCommon+kf, val, "");
-        for (int i = 0; i < maxentTagger.ySize; i++) {
-          int fNum = maxentTagger.getNum(s, i);
-          if (fNum == -2) break;
-          if (fNum > -1) {
-            scores[i] += lambda[fNum];
-          } // end for
+        int nums[] = maxentTagger.getScores(val);
+        if(nums != null) { // known word
+          for (int i = 0; i < maxentTagger.ySize; i++) {
+            int fNum = nums[i * numExtractors + szCommon + kf];
+            if (fNum > -1) {
+              scores[i] += lambda[fNum];
+            } // end for
+          }
         }
       }
     }
@@ -477,37 +482,45 @@ public class TestSentence implements SequenceModel {
     double lambda[] = maxentTagger.getLambdaSolve().lambda;
 
     int tagIndexes[] = new int[tags.length];
+    int szCommon = maxentTagger.extractors.getSize();
+    int numExtractors = szCommon;
+    if(maxentTagger.extractorsRare != null)
+      numExtractors += maxentTagger.extractorsRare.getSize();
+
     for(int i = 0; i < tags.length; i++)
-      tagIndexes[i] = maxentTagger.tags.getIndex(tags[i]);
+      tagIndexes[i] = maxentTagger.tags.getIndex(tags[i]) * numExtractors;
 
     double[] scores = new double[tags.length];
-    FeatureKey s = new FeatureKey();
-    int szCommon = maxentTagger.extractors.getSize();
 
     for(Map.Entry<Integer,Extractor> e : extractors.entrySet()) {
       int kf = e.getKey();
       Extractor ex = e.getValue();
       String val = ex.extract(h);
-      s.set(kf, val, "");
-      for (int j = 0; j < tags.length; j++) {
-        int fNum = maxentTagger.getNum(s, tagIndexes[j]);
-        if (fNum == -2) break;
-        if (fNum > -1) {
-          scores[j] += lambda[fNum];
+      int[] nums = maxentTagger.getScores(val);
+      if(nums != null) { // known word
+        for (int j = 0; j < tags.length; j++) {
+          int fNum = nums[tagIndexes[j] + kf];
+          if (fNum > -1) {
+            scores[j] += lambda[fNum];
+          }
         }
       }
     }
     if(extractorsRare != null) {
+      for(int i = 0; i < tags.length; i++)
+        tagIndexes[i] += szCommon;
+
       for(Map.Entry<Integer,Extractor> e : extractorsRare.entrySet()) {
         int kf = e.getKey();
         Extractor ex = e.getValue();
         String val = ex.extract(h);
-        s.set(szCommon+kf, val, "");
-        for (int j = 0; j < tags.length; j++) {
-          int fNum = maxentTagger.getNum(s, tagIndexes[j]);
-          if (fNum == -2) break;
-          if (fNum > -1) {
-            scores[j] += lambda[fNum];
+        int[] nums = maxentTagger.getScores(val);
+        if(nums != null) { // known word
+          for (int j = 0; j < tags.length; j++) {
+            int fNum = nums[tagIndexes[j] + kf];
+            if (fNum > -1) {
+              scores[j] += lambda[fNum];
+            }
           }
         }
       }

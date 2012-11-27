@@ -23,7 +23,7 @@ object MyScalaApp {
     if(true) {
       (1 to 1000).foreach { i =>
         timeIt("tag") {
-          val rv = (1 to 100).par.map { j =>
+          val rv = (1 to 10).map { j =>
             tagger.tagString(txts(j % txts.length)) -> tests(j % tests.length)
           }
           rv.foreach { case (actual, expected) =>

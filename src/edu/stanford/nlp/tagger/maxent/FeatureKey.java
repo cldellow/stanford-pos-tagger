@@ -30,12 +30,6 @@ public class FeatureKey {
   String val;
   String tag;
 
-  // If dirty, the scores in nums cannot be reused.
-  public boolean dirty = true;
-  // The scores for this.val, corresponding to entries in  the extractors X tags matrix,
-  // flattened into a single array.
-  public int[] nums = null;
-
   public FeatureKey() {
   }
 
@@ -48,10 +42,6 @@ public class FeatureKey {
 
 
   protected void set(int num, String val, String tag) {
-    if(!val.equals(this.val)) {
-      this.dirty = true;
-      this.nums = null;
-    }
     this.num = num;
     this.val = val;
     this.tag = tag;

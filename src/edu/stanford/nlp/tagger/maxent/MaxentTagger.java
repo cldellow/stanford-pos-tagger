@@ -536,22 +536,10 @@ public class MaxentTagger implements Function<List<? extends HasWord>,ArrayList<
   }
 
   /* Package access.  Not part of public API. */
-  // NOTE: s.tag is totally ignored; tagIndex is used instead
-  // Could consider making a separate cache class.
-  int getNum(FeatureKey s, int tagIndex) {
-    int[] arr = s.nums;
-    if(s.dirty) {
-      arr = fAssociations2.get(s.val);
-      s.nums = arr;
-      s.dirty = false;
-    }
-
-    if(arr == null)
-      return -2; // totally unknown word
-
-    return arr[tagIndex * numExtractors + s.num];
+  /* Return the features * nums matrix for this word as a flat array. */
+  int[] getScores(String val) {
+    return fAssociations2.get(val);
   }
-
 
   // serialize the ExtractorFrames and ExtractorFramesRare in filename
   private void saveExtractors(OutputStream os) throws IOException {
