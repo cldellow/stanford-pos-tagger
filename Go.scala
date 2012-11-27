@@ -1,6 +1,3 @@
-import java.io._;
-import java.util._;
-import java.io.StringReader;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.util.StringUtils;
 import java.util.LinkedList;
@@ -16,21 +13,32 @@ object MyScalaApp {
   }
 
   def main(args: Array[String]) {
-    System.out.println("waiting");
-    val txt = scala.io.Source.fromFile("./betel.txt").getLines().mkString(" ")
+    val oracles = List("betel.txt", "grey-cup.txt", "raf-northolt.txt").map { "texts/" + _ }
+
+    val txts = oracles.map { scala.io.Source.fromFile(_).getLines().mkString(" ") }
+    val tests = oracles.map { _ + ".correct" }.map {
+      scala.io.Source.fromFile(_).getLines().mkString("")
+    }
     val tagger = new MaxentTagger("english.tagger")
     if(true) {
       (1 to 1000).foreach { i =>
         timeIt("tag") {
-          (1 to 10).foreach { j =>
-            tagger.tagString(txt)
+          val rv = (1 to 100).par.map { j =>
+            tagger.tagString(txts(j % txts.length)) -> tests(j % tests.length)
           }
+          rv.foreach { case (actual, expected) =>
+            if(actual != expected)
+              println("error");
+          }
+
 //          println("    getTag = " + tagger.took/1000);
 //          tagger.took = 0;
         }
       }
     } else {
-      println(tagger.tagString(txt));
+      txts.foreach { txt =>
+        println(tagger.tagString(txt));
+      }
     }
   }
 }
