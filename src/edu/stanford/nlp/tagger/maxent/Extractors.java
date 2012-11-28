@@ -32,6 +32,8 @@ public class Extractors implements Serializable {
     localContext, // extractors only looking at words, except those in "local"
     dynamic; // extractors depending on class labels
 
+  volatile IndexedExtractor[] localList, localContextList, dynamicList;
+
 
   /**
    * Set the extractors from an array.
@@ -44,6 +46,16 @@ public class Extractors implements Serializable {
     initTypes();
   }
 
+
+  private IndexedExtractor[] makeArray(Map<Integer,Extractor> map) {
+    IndexedExtractor[] rv = new IndexedExtractor[map.size()];
+    int i = 0;
+    for(Map.Entry<Integer, Extractor> e : map.entrySet()) {
+      rv[i] = new IndexedExtractor(e.getValue(), e.getKey());
+      i++;
+    }
+    return rv;
+  }
 
   /**
    * Determine type of each feature extractor.
@@ -67,6 +79,10 @@ public class Extractors implements Serializable {
         localContext.put(i,e);
       }
     }
+
+    localList = makeArray(local);
+    localContextList = makeArray(localContext);
+    dynamicList = makeArray(dynamic);
     if(DEBUG) {
       System.err.println("Extractors: "+this);
       System.err.printf("Local: %d extractors\n",local.size());

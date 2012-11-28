@@ -416,26 +416,26 @@ public class TestSentence implements SequenceModel {
     String w = pairs.getWord(h.current);
     double[] lS, lcS;
     if((lS = localScores.get(w)) == null) {
-      lS = getHistories(tags, h, ex.local, rare ? exR.local : null);
+      lS = getHistories(tags, h, ex.localList, rare ? exR.localList : null);
       localScores.put(w,lS);
     }
     if((lcS = localContextScores[h.current]) == null) {
-      lcS = getHistories(tags, h, ex.localContext, rare ? exR.localContext : null);
+      lcS = getHistories(tags, h, ex.localContextList, rare ? exR.localContextList : null);
       localContextScores[h.current] = lcS;
       ArrayMath.pairwiseAddInPlace(lcS,lS);
     }
-    double[] totalS = getHistories(tags, h, ex.dynamic, rare ? exR.dynamic : null);
+    double[] totalS = getHistories(tags, h, ex.dynamicList, rare ? exR.dynamicList : null);
     ArrayMath.pairwiseAddInPlace(totalS,lcS);
     return totalS;
   }
 
-  private double[] getHistories(String[] tags, History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
+  private double[] getHistories(String[] tags, History h, IndexedExtractor[] extractors, IndexedExtractor[] extractorsRare) {
     if(maxentTagger.defaultScore > 0)
       return getApproximateHistories(tags, h, extractors, extractorsRare);
     return getExactHistories(h, extractors, extractorsRare);
   }
 
-  private double[] getExactHistories(History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
+  private double[] getExactHistories(History h, IndexedExtractor[] extractors, IndexedExtractor[] extractorsRare) {
     double[] scores = new double[maxentTagger.ySize];
     double[] lambda = maxentTagger.getLambdaSolve().lambda;
 
@@ -444,9 +444,9 @@ public class TestSentence implements SequenceModel {
     if(maxentTagger.extractorsRare != null)
       numExtractors += maxentTagger.extractorsRare.getSize();
 
-    for(Map.Entry<Integer,Extractor> e : extractors.entrySet()) {
-      int kf = e.getKey();
-      Extractor ex = e.getValue();
+    for(IndexedExtractor e : extractors) {
+      int kf = e.index;
+      Extractor ex = e.extractor;
       String val = ex.extract(h);
       int nums[] = maxentTagger.getScores(val);
       if(nums != null) { // known word
@@ -459,9 +459,9 @@ public class TestSentence implements SequenceModel {
       }
     }
     if(extractorsRare != null) {
-      for(Map.Entry<Integer,Extractor> e : extractorsRare.entrySet()) {
-        int kf = e.getKey();
-        Extractor ex = e.getValue();
+      for(IndexedExtractor e : extractorsRare) {
+        int kf = e.index;
+        Extractor ex = e.extractor;
         String val = ex.extract(h);
         int nums[] = maxentTagger.getScores(val);
         if(nums != null) { // known word
@@ -478,7 +478,7 @@ public class TestSentence implements SequenceModel {
   }
 
   // Returns an unnormalized score (in log space) for each tag
-  private double[] getApproximateHistories(String[] tags, History h, Map<Integer,Extractor> extractors, Map<Integer,Extractor> extractorsRare) {
+  private double[] getApproximateHistories(String[] tags, History h, IndexedExtractor[] extractors, IndexedExtractor[] extractorsRare) {
     double lambda[] = maxentTagger.getLambdaSolve().lambda;
 
     int tagIndexes[] = new int[tags.length];
@@ -492,9 +492,9 @@ public class TestSentence implements SequenceModel {
 
     double[] scores = new double[tags.length];
 
-    for(Map.Entry<Integer,Extractor> e : extractors.entrySet()) {
-      int kf = e.getKey();
-      Extractor ex = e.getValue();
+    for(IndexedExtractor e : extractors) {
+      int kf = e.index;
+      Extractor ex = e.extractor;
       String val = ex.extract(h);
       int[] nums = maxentTagger.getScores(val);
       if(nums != null) { // known word
@@ -510,9 +510,9 @@ public class TestSentence implements SequenceModel {
       for(int i = 0; i < tags.length; i++)
         tagIndexes[i] += szCommon;
 
-      for(Map.Entry<Integer,Extractor> e : extractorsRare.entrySet()) {
-        int kf = e.getKey();
-        Extractor ex = e.getValue();
+      for(IndexedExtractor e : extractorsRare) {
+        int kf = e.index;
+        Extractor ex = e.extractor;
         String val = ex.extract(h);
         int[] nums = maxentTagger.getScores(val);
         if(nums != null) { // known word
